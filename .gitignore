@@ -1,0 +1,50 @@
+# Environment and secrets
+.env
+.env.*
+!.env.example
+backend/.env
+backend/.env.*
+!backend/.env.example
+*.pem
+*.key
+*.crt
+secrets/
+
+# Python virtualenv and caches
+.venv/
+venv/
+backend/.venv/
+__pycache__/
+**/__pycache__/
+*.py[cod]
+.pytest_cache/
+backend/.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Coverage and test output
+.coverage
+.coverage.*
+htmlcov/
+
+# Runtime state
+*.sqlite3
+*.db
+*.db-shm
+*.db-wal
+backend/app.db
+backend/test.db
+
+# Logs and temp files
+*.log
+*.err
+tmp/
+temp/
+backend/tmp_uvicorn.log
+backend/tmp_uvicorn.err
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI Email Agent Metrics</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f2f5f7;
+      --ink: #162636;
+      --muted: #5b6e7c;
+      --line: rgba(22, 38, 54, 0.14);
+      --card: #ffffff;
+      --primary: #0b7285;
+      --ok: #1f7a54;
+      --warn: #ab5b13;
+      --danger: #9e2f3f;
+      --radius: 16px;
+      --shadow: 0 16px 28px rgba(11, 30, 46, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Space Grotesk", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 10% 0%, rgba(11, 114, 133, 0.13), transparent 30%),
+        radial-gradient(circle at 90% 10%, rgba(171, 91, 19, 0.12), transparent 28%),
+        var(--bg);
+    }
+    .wrap {
+      max-width: 1220px;
+      margin: 20px auto 26px;
+      padding: 0 14px;
+    }
+    .hero {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      padding: 16px 18px;
+      margin-bottom: 12px;
+    }
+    h1 { margin: 0; font-size: 1.35rem; }
+    .muted { color: var(--muted); font-size: 0.9rem; }
+    .mono { font-family: "IBM Plex Mono", monospace; font-size: 0.82rem; }
+    .btn {
+      appearance: none;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #fff;
+      color: var(--ink);
+      font: inherit;
+      font-size: 0.86rem;
+      padding: 8px 12px;
+      cursor: pointer;
+    }
+    .btn.primary {
+      border-color: rgba(11, 114, 133, 0.35);
+      background: linear-gradient(160deg, #0b7285, #0a6271);
+      color: #fff;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 12px 14px;
+    }
+    .kpi-label { color: var(--muted); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; }
+    .kpi-value { font-size: 1.45rem; margin-top: 3px; }
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+    .panel-head {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(90deg, rgba(11, 114, 133, 0.08), transparent);
+    }
+    .panel-body { overflow-x: auto; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 720px;
+      font-size: 0.85rem;
+    }
+    th, td {
+      text-align: left;
+      padding: 9px 10px;
+      border-bottom: 1px solid rgba(22, 38, 54, 0.08);
+      vertical-align: top;
+    }
+    th {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      background: rgba(22, 38, 54, 0.02);
+    }
+    .pill {
+      display: inline-flex;
+      border: 1px solid;
+      border-radius: 999px;
+      font-size: 0.71rem;
+      padding: 2px 8px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .ok { color: var(--ok); border-color: rgba(31, 122, 84, 0.34); background: #ebf8f1; }
+    .warn { color: var(--warn); border-color: rgba(171, 91, 19, 0.34); background: #fff4e7; }
+    .danger { color: var(--danger); border-color: rgba(158, 47, 63, 0.35); background: #fdeef1; }
+
+    @media (max-width: 900px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 580px) { .grid { grid-template-columns: 1fr; } .btn { width: 100%; } }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="hero">
+      <div>
+        <h1>Metrics Dashboard</h1>
+        <div class="muted">Live HTTP, scheduler, queue and alerting metrics.</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+        <a href="/dashboard"><button class="btn">Back to Review Dashboard</button></a>
+        <button id="btn-refresh" class="btn primary">Refresh</button>
+        <span id="generated-at" class="mono muted">-</span>
+      </div>
+    </section>
+
+    <section class="grid">
+      <article class="card">
+        <div class="kpi-label">Requests</div>
+        <div class="kpi-value mono" id="kpi-requests">0</div>
+      </article>
+      <article class="card">
+        <div class="kpi-label">5xx Errors</div>
+        <div class="kpi-value mono" id="kpi-errors">0</div>
+      </article>
+      <article class="card">
+        <div class="kpi-label">P95 Latency (ms)</div>
+        <div class="kpi-value mono" id="kpi-p95">0</div>
+      </article>
+      <article class="card">
+        <div class="kpi-label">Dead-Letter</div>
+        <div class="kpi-value mono" id="kpi-dead-letter">0</div>
+      </article>
+    </section>
+
+    <section class="panel">
+      <header class="panel-head">
+        <strong>Queue Overview</strong>
+        <span class="muted mono" id="queue-meta">-</span>
+      </header>
+      <div class="panel-body" id="queue-body"></div>
+    </section>
+
+    <section class="panel">
+      <header class="panel-head">
+        <strong>Scheduler Jobs</strong>
+        <span class="muted mono">latest runs</span>
+      </header>
+      <div class="panel-body" id="jobs-body"></div>
+    </section>
+
+    <section class="panel">
+      <header class="panel-head">
+        <strong>HTTP Top Paths</strong>
+        <span class="muted mono">last process lifetime</span>
+      </header>
+      <div class="panel-body" id="paths-body"></div>
+    </section>
+
+    <section class="panel">
+      <header class="panel-head">
+        <strong>Alerting</strong>
+        <span class="muted mono">delivery status</span>
+      </header>
+      <div class="panel-body" id="alerts-body"></div>
+    </section>
+  </main>
+
+  <script>
+    const API = "/api/v1/metrics";
+
+    const kpiRequests = document.getElementById("kpi-requests");
+    const kpiErrors = document.getElementById("kpi-errors");
+    const kpiP95 = document.getElementById("kpi-p95");
+    const kpiDeadLetter = document.getElementById("kpi-dead-letter");
+    const generatedAt = document.getElementById("generated-at");
+    const queueMeta = document.getElementById("queue-meta");
+    const queueBody = document.getElementById("queue-body");
+    const jobsBody = document.getElementById("jobs-body");
+    const pathsBody = document.getElementById("paths-body");
+    const alertsBody = document.getElementById("alerts-body");
+
+    function encodeHtml(value) {
+      if (value === null || value === undefined) return "";
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function renderTable(rows, columns, emptyText) {
+      if (!rows.length) return `<div class="muted" style="padding:12px 14px;">${emptyText}</div>`;
+      const head = columns.map((c) => `<th>${c.label}</th>`).join("");
+      const body = rows.map((row) => `<tr>${columns.map((c) => `<td>${c.render(row)}</td>`).join("")}</tr>`).join("");
+      return `<table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>`;
+    }
+
+    function renderQueue(actions, tasks) {
+      const rows = [
+        { name: "Pending approval", value: actions.pending_approval || 0 },
+        { name: "Pending execution", value: actions.pending_execution || 0 },
+        { name: "Dead letter", value: actions.dead_letter || 0 },
+        { name: "Open tasks", value: tasks.open || 0 },
+      ];
+      queueBody.innerHTML = renderTable(
+        rows,
+        [
+          { label: "Metric", render: (r) => encodeHtml(r.name) },
+          { label: "Value", render: (r) => `<span class="mono">${r.value}</span>` },
+        ],
+        "No queue metrics."
+      );
+    }
+
+    function renderJobs(jobs) {
+      const rows = Object.entries(jobs || {}).map(([name, stat]) => ({ name, ...stat }));
+      jobsBody.innerHTML = renderTable(
+        rows,
+        [
+          { label: "Job", render: (r) => `<span class="mono">${encodeHtml(r.name)}</span>` },
+          { label: "Runs", render: (r) => `<span class="mono">${r.runs || 0}</span>` },
+          { label: "Failures", render: (r) => `<span class="mono">${r.failures || 0}</span>` },
+          { label: "Last Duration", render: (r) => `<span class="mono">${Math.round(r.last_duration_ms || 0)} ms</span>` },
+          { label: "Last Success", render: (r) => `<span class="mono">${encodeHtml(r.last_success_at || "-")}</span>` },
+          {
+            label: "State",
+            render: (r) => (r.last_error_message ? `<span class="pill warn">warning</span>` : `<span class="pill ok">healthy</span>`)
+          },
+        ],
+        "No scheduler runs yet."
+      );
+    }
+
+    function renderPaths(topPaths) {
+      pathsBody.innerHTML = renderTable(
+        topPaths || [],
+        [
+          { label: "Path", render: (r) => `<span class="mono">${encodeHtml(r.path)}</span>` },
+          { label: "Hits", render: (r) => `<span class="mono">${r.count}</span>` },
+        ],
+        "No HTTP path stats yet."
+      );
+    }
+
+    function renderAlerts(alerts) {
+      const rows = [
+        { metric: "Sent", value: alerts.sent || 0, klass: "ok" },
+        { metric: "Failed", value: alerts.failed || 0, klass: alerts.failed ? "danger" : "ok" },
+        { metric: "Last Sent", value: alerts.last_sent_at || "-", klass: "warn" },
+        { metric: "Last Error", value: alerts.last_error || "-", klass: alerts.last_error ? "danger" : "ok" },
+      ];
+      alertsBody.innerHTML = renderTable(
+        rows,
+        [
+          { label: "Metric", render: (r) => encodeHtml(r.metric) },
+          { label: "Value", render: (r) => `<span class="mono">${encodeHtml(r.value)}</span>` },
+          { label: "Status", render: (r) => `<span class="pill ${r.klass}">${r.klass}</span>` },
+        ],
+        "No alerting data."
+      );
+    }
+
+    async function loadMetrics() {
+      const response = await fetch(API, { headers: { "Content-Type": "application/json" } });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const data = await response.json();
+
+      kpiRequests.textContent = String(data.http.total_requests || 0);
+      kpiErrors.textContent = String(data.http.error_requests || 0);
+      kpiP95.textContent = String(Math.round(data.http.p95_latency_ms || 0));
+      kpiDeadLetter.textContent = String((data.actions.queue && data.actions.queue.dead_letter) || 0);
+      generatedAt.textContent = `updated ${data.generated_at || "-"}`;
+      queueMeta.textContent = `executed last 24h: ${data.actions.executed_last_24h || 0}`;
+
+      renderQueue(data.actions.queue || {}, data.tasks || {});
+      renderJobs(data.jobs || {});
+      renderPaths(data.http.top_paths || []);
+      renderAlerts(data.alerts || {});
+    }
+
+    async function refresh() {
+      try {
+        await loadMetrics();
+      } catch (error) {
+        generatedAt.textContent = `error: ${error.message}`;
+      }
+    }
+
+    document.getElementById("btn-refresh").addEventListener("click", refresh);
+    refresh();
+    setInterval(refresh, 15000);
+  </script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: ai-email-agent-postgres
+    environment:
+      POSTGRES_DB: ai_email_agent
+      POSTGRES_USER: ai_email_user
+      POSTGRES_PASSWORD: ai_email_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ai_email_user -d ai_email_agent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 5s
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ai-email-agent-backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - ./backend/.env
+    environment:
+      APP_DATABASE_URL: postgresql+psycopg2://ai_email_user:ai_email_pass@postgres:5432/ai_email_agent
+      APP_ENVIRONMENT: production
+      APP_LOG_JSON: "true"
+      APP_SCHEDULER_ENABLED: "true"
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

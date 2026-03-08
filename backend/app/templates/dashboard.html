@@ -1,0 +1,1255 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI Email Agent Review Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-0: #f6f2e9;
+      --bg-1: #efe8d8;
+      --ink-0: #17222d;
+      --ink-1: #4f616d;
+      --ink-2: #6d7f89;
+      --card: rgba(255, 255, 255, 0.87);
+      --card-strong: rgba(255, 255, 255, 0.96);
+      --line: rgba(23, 34, 45, 0.11);
+      --line-strong: rgba(23, 34, 45, 0.17);
+      --primary: #0f766e;
+      --primary-strong: #0b5f5a;
+      --warn: #b76816;
+      --danger: #a33636;
+      --ok: #2a7a53;
+      --shadow-lg: 0 20px 42px rgba(23, 34, 45, 0.13);
+      --shadow-md: 0 12px 24px rgba(23, 34, 45, 0.09);
+      --radius-xl: 24px;
+      --radius-lg: 16px;
+      --radius-md: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Plus Jakarta Sans", "Segoe UI", sans-serif;
+      color: var(--ink-0);
+      background:
+        radial-gradient(circle at 8% 10%, rgba(28, 137, 122, 0.2) 0%, transparent 32%),
+        radial-gradient(circle at 92% 8%, rgba(236, 154, 54, 0.2) 0%, transparent 30%),
+        linear-gradient(130deg, var(--bg-0) 0%, var(--bg-1) 100%);
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(130deg, transparent 0 64%, rgba(15, 118, 110, 0.045) 64% 100%),
+        repeating-linear-gradient(
+          90deg,
+          transparent 0 68px,
+          rgba(23, 34, 45, 0.022) 68px 69px
+        );
+      z-index: -1;
+    }
+
+    .shell {
+      max-width: 1240px;
+      margin: 26px auto 30px;
+      padding: 0 16px 28px;
+      animation: rise 430ms cubic-bezier(0.18, 0.86, 0.33, 1) both;
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes panelIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero {
+      border: 1px solid var(--line-strong);
+      background:
+        radial-gradient(circle at 0% 0%, rgba(15, 118, 110, 0.16) 0%, transparent 26%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(255, 255, 255, 0.84));
+      backdrop-filter: blur(9px);
+      box-shadow: var(--shadow-lg);
+      border-radius: var(--radius-xl);
+      padding: 20px 20px 18px;
+      margin-bottom: 16px;
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-family: "Space Grotesk", "Plus Jakarta Sans", sans-serif;
+      font-size: 1.52rem;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+    }
+
+    .hero p {
+      margin: 7px 0 0;
+      color: var(--ink-2);
+      font-size: 0.94rem;
+      max-width: 560px;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      appearance: none;
+      border: 1px solid transparent;
+      border-radius: 999px;
+      padding: 9px 14px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: "Plus Jakarta Sans", sans-serif;
+      transition: transform 120ms ease, box-shadow 160ms ease, background-color 140ms ease, border-color 140ms ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px) scale(1.01);
+    }
+
+    .btn-primary {
+      background: linear-gradient(160deg, var(--primary), var(--primary-strong));
+      color: #fff;
+      box-shadow: 0 10px 18px rgba(15, 118, 110, 0.28);
+    }
+
+    .btn-primary:hover {
+      box-shadow: 0 12px 22px rgba(15, 118, 110, 0.35);
+    }
+
+    .btn-muted {
+      background: #ffffffea;
+      color: var(--ink-0);
+      border-color: var(--line-strong);
+      box-shadow: 0 8px 16px rgba(23, 34, 45, 0.08);
+    }
+
+    .btn-warn {
+      background: #fff4e6f0;
+      color: #8a4a14;
+      border-color: rgba(183, 104, 22, 0.36);
+    }
+
+    .btn-danger {
+      background: #fff2f0f0;
+      color: #8f3124;
+      border-color: rgba(163, 54, 54, 0.33);
+    }
+
+    .btn-success {
+      background: #eef9f2;
+      color: #1d6240;
+      border-color: rgba(47, 126, 87, 0.35);
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .stat {
+      background: linear-gradient(180deg, var(--card-strong), var(--card));
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-md);
+      padding: 12px 14px;
+      min-height: 92px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 5px;
+      background: linear-gradient(180deg, rgba(15, 118, 110, 0.85), rgba(15, 118, 110, 0.3));
+      border-radius: 3px;
+    }
+
+    .stat .label {
+      color: var(--ink-2);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      margin-left: 4px;
+    }
+
+    .stat .value {
+      margin-top: 4px;
+      margin-left: 4px;
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 1.72rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 13px;
+    }
+
+    .panel {
+      background: linear-gradient(180deg, var(--card-strong), var(--card));
+      border: 1px solid var(--line);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+      animation: panelIn 420ms ease both;
+    }
+
+    .layout .panel:nth-child(2) { animation-delay: 40ms; }
+    .layout .panel:nth-child(3) { animation-delay: 80ms; }
+    .layout .panel:nth-child(4) { animation-delay: 120ms; }
+    .layout .panel:nth-child(5) { animation-delay: 160ms; }
+    .layout .panel:nth-child(6) { animation-delay: 200ms; }
+    .layout .panel:nth-child(7) { animation-delay: 240ms; }
+
+    .panel h2 {
+      margin: 0;
+      font-family: "Space Grotesk", "Plus Jakarta Sans", sans-serif;
+      font-size: 1.06rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    .panel-head {
+      padding: 13px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      border-bottom: 1px solid var(--line);
+      background:
+        linear-gradient(90deg, rgba(15, 118, 110, 0.1), rgba(15, 118, 110, 0.01)),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(255, 255, 255, 0.84));
+    }
+
+    .panel-body {
+      overflow-x: auto;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.92));
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 760px;
+      font-size: 0.87rem;
+    }
+
+    th, td {
+      text-align: left;
+      border-bottom: 1px solid var(--line);
+      padding: 10px 11px;
+      vertical-align: top;
+    }
+
+    th {
+      color: var(--ink-2);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.075em;
+      font-size: 0.72rem;
+      background: rgba(23, 34, 45, 0.022);
+    }
+
+    tbody tr {
+      transition: background-color 130ms ease;
+    }
+
+    tbody tr:hover {
+      background: rgba(15, 118, 110, 0.056);
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 3px 8px;
+      font-size: 0.71rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      border: 1px solid;
+      white-space: nowrap;
+      text-transform: uppercase;
+    }
+
+    .status-pending_approval { color: #7e4611; background: #fff4e5; border-color: rgba(183, 104, 22, 0.32); }
+    .status-pending { color: #0b5f69; background: #e7f6f8; border-color: rgba(15, 118, 110, 0.3); }
+    .status-retry_pending { color: #7f520f; background: #fff8de; border-color: rgba(183, 104, 22, 0.36); }
+    .status-executed { color: #195f3c; background: #e9f6ed; border-color: rgba(42, 122, 83, 0.32); }
+    .status-dead_letter { color: #7f2532; background: #fdebf0; border-color: rgba(163, 54, 54, 0.38); }
+    .status-failed { color: #8e3023; background: #fff0ee; border-color: rgba(163, 54, 54, 0.35); }
+    .status-rejected { color: #6b2c1f; background: #fbe9e6; border-color: rgba(163, 54, 54, 0.26); }
+    .status-skipped { color: #4f6068; background: #edf2f3; border-color: rgba(81, 101, 109, 0.3); }
+
+    .actions {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .input-num {
+      width: 90px;
+      border: 1px solid var(--line-strong);
+      border-radius: 8px;
+      padding: 6px 8px;
+      font-size: 0.86rem;
+      background: #fffefc;
+      color: var(--ink-0);
+      transition: border-color 120ms ease, box-shadow 140ms ease;
+    }
+
+    .input-num:focus {
+      outline: none;
+      border-color: rgba(15, 118, 110, 0.48);
+      box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.12);
+    }
+
+    .toggle {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--primary);
+      vertical-align: middle;
+    }
+
+    .mono {
+      font-family: "IBM Plex Mono", "Consolas", monospace;
+      font-size: 0.79rem;
+    }
+
+    .muted {
+      color: var(--ink-2);
+    }
+
+    .empty {
+      padding: 18px 16px;
+      color: var(--ink-2);
+      font-style: italic;
+    }
+
+    .flash {
+      padding: 10px 14px;
+      border-radius: var(--radius-md);
+      border: 1px solid transparent;
+      font-size: 0.9rem;
+      display: none;
+      margin-bottom: 12px;
+      box-shadow: 0 10px 18px rgba(23, 34, 45, 0.09);
+    }
+
+    .flash.ok {
+      display: block;
+      background: #ebf7ef;
+      border-color: rgba(47, 126, 87, 0.3);
+      color: #1d6240;
+    }
+
+    .flash.err {
+      display: block;
+      background: #fff1ef;
+      border-color: rgba(164, 63, 46, 0.35);
+      color: #8b3325;
+    }
+
+    ::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(23, 34, 45, 0.06);
+      border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(23, 34, 45, 0.25);
+      border-radius: 10px;
+    }
+
+    @media (max-width: 980px) {
+      .stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .hero {
+        border-radius: var(--radius-lg);
+      }
+
+      .panel {
+        border-radius: var(--radius-lg);
+      }
+    }
+
+    @media (max-width: 620px) {
+      .shell {
+        margin: 12px auto;
+        padding: 0 10px 16px;
+      }
+
+      .hero {
+        padding: 14px 14px 13px;
+      }
+
+      .stats {
+        grid-template-columns: 1fr;
+      }
+
+      .hero h1 {
+        font-size: 1.18rem;
+      }
+
+      .btn {
+        width: 100%;
+        text-align: center;
+      }
+
+      .toolbar {
+        width: 100%;
+      }
+
+      .panel-head {
+        padding: 11px 12px;
+      }
+
+      th, td {
+        padding: 9px 8px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <div>
+        <h1>Action Review Dashboard</h1>
+        <p>Manual approvals, pending execution queue, and recent outcomes.</p>
+      </div>
+      <div class="toolbar">
+        <button id="btn-plan" class="btn btn-primary">Plan New Actions</button>
+        <button id="btn-exec" class="btn btn-warn">Run Pending Execution</button>
+        <button id="btn-metrics" class="btn btn-muted">Open Metrics</button>
+        <button id="btn-refresh" class="btn btn-muted">Refresh</button>
+      </div>
+    </section>
+
+    <div id="flash" class="flash"></div>
+
+    <section class="stats">
+      <article class="stat">
+        <span class="label">Pending Approval</span>
+        <strong class="value" id="stat-pending-approval">0</strong>
+      </article>
+      <article class="stat">
+        <span class="label">Pending Execution</span>
+        <strong class="value" id="stat-pending">0</strong>
+      </article>
+      <article class="stat">
+        <span class="label">Executed</span>
+        <strong class="value" id="stat-executed">0</strong>
+      </article>
+      <article class="stat">
+        <span class="label">Failed</span>
+        <strong class="value" id="stat-failed">0</strong>
+      </article>
+    </section>
+
+    <section class="layout">
+      <article class="panel">
+        <header class="panel-head">
+          <h2>Google Calendar Integration</h2>
+          <span class="muted mono" id="google-status-label">not connected</span>
+        </header>
+        <div class="panel-body">
+          <table>
+            <thead>
+              <tr>
+                <th>Connection</th>
+                <th>OAuth Setup</th>
+                <th>Encryption</th>
+                <th>Refresh Token</th>
+                <th>Expires</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td id="google-connected" class="mono">Unknown</td>
+                <td id="google-oauth-ready" class="mono">Unknown</td>
+                <td id="google-encryption-ready" class="mono">Unknown</td>
+                <td id="google-refresh-ready" class="mono">Unknown</td>
+                <td id="google-expires" class="mono">-</td>
+                <td>
+                  <div class="actions">
+                    <button id="btn-google-connect" class="btn btn-primary">Connect</button>
+                    <button id="btn-google-disconnect" class="btn btn-danger">Disconnect</button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="panel">
+        <header class="panel-head">
+          <h2>Rules</h2>
+          <div class="actions">
+            <span class="muted mono" id="rules-label">0 items</span>
+            <button id="btn-rules-save-all" class="btn btn-primary">Save All Changes</button>
+          </div>
+        </header>
+        <div class="panel-body" id="rules-body"></div>
+      </article>
+
+      <article class="panel">
+        <header class="panel-head">
+          <h2>Pending Approval</h2>
+          <span class="muted mono" id="pending-approval-label">0 items</span>
+        </header>
+        <div class="panel-body" id="pending-approval-body"></div>
+      </article>
+
+      <article class="panel">
+        <header class="panel-head">
+          <h2>Pending Execution</h2>
+          <span class="muted mono" id="pending-label">0 items</span>
+        </header>
+        <div class="panel-body" id="pending-body"></div>
+      </article>
+
+      <article class="panel">
+        <header class="panel-head">
+          <h2>Dead-Letter Queue</h2>
+          <span class="muted mono" id="dead-letter-label">0 items</span>
+        </header>
+        <div class="panel-body" id="dead-letter-body"></div>
+      </article>
+
+      <article class="panel">
+        <header class="panel-head">
+          <h2>Recent Actions</h2>
+          <span class="muted mono" id="recent-label">0 items</span>
+        </header>
+        <div class="panel-body" id="recent-body"></div>
+      </article>
+
+      <article class="panel">
+        <header class="panel-head">
+          <h2>Tasks</h2>
+          <span class="muted mono" id="tasks-label">0 items</span>
+        </header>
+        <div class="panel-body" id="tasks-body"></div>
+      </article>
+
+      <article class="panel">
+        <header class="panel-head">
+          <h2>Audit Timeline</h2>
+          <span class="muted mono" id="events-label">0 events</span>
+        </header>
+        <div class="panel-body" id="events-body"></div>
+      </article>
+    </section>
+  </main>
+
+  <script>
+    const API = "/api/v1";
+
+    const flashEl = document.getElementById("flash");
+
+    const pendingApprovalBody = document.getElementById("pending-approval-body");
+    const pendingBody = document.getElementById("pending-body");
+    const deadLetterBody = document.getElementById("dead-letter-body");
+    const recentBody = document.getElementById("recent-body");
+    const tasksBody = document.getElementById("tasks-body");
+    const eventsBody = document.getElementById("events-body");
+    const rulesBody = document.getElementById("rules-body");
+
+    const statPendingApproval = document.getElementById("stat-pending-approval");
+    const statPending = document.getElementById("stat-pending");
+    const statExecuted = document.getElementById("stat-executed");
+    const statFailed = document.getElementById("stat-failed");
+
+    const pendingApprovalLabel = document.getElementById("pending-approval-label");
+    const pendingLabel = document.getElementById("pending-label");
+    const deadLetterLabel = document.getElementById("dead-letter-label");
+    const recentLabel = document.getElementById("recent-label");
+    const tasksLabel = document.getElementById("tasks-label");
+    const eventsLabel = document.getElementById("events-label");
+    const rulesLabel = document.getElementById("rules-label");
+    const saveAllRulesButton = document.getElementById("btn-rules-save-all");
+    const googleStatusLabel = document.getElementById("google-status-label");
+    const googleConnected = document.getElementById("google-connected");
+    const googleOAuthReady = document.getElementById("google-oauth-ready");
+    const googleEncryptionReady = document.getElementById("google-encryption-ready");
+    const googleRefreshReady = document.getElementById("google-refresh-ready");
+    const googleExpires = document.getElementById("google-expires");
+    const googleConnectButton = document.getElementById("btn-google-connect");
+    const googleDisconnectButton = document.getElementById("btn-google-disconnect");
+
+    let rulesSnapshot = new Map();
+
+    function showFlash(message, kind = "ok") {
+      flashEl.className = `flash ${kind === "err" ? "err" : "ok"}`;
+      flashEl.textContent = message;
+      setTimeout(() => {
+        flashEl.className = "flash";
+        flashEl.textContent = "";
+      }, 3500);
+    }
+
+    async function apiRequest(path, options = {}) {
+      const response = await fetch(`${API}${path}`, {
+        headers: { "Content-Type": "application/json" },
+        ...options
+      });
+
+      const text = await response.text();
+      let data = {};
+      if (text) {
+        try {
+          data = JSON.parse(text);
+        } catch {
+          data = { detail: text };
+        }
+      }
+      if (!response.ok) {
+        const detail = data && data.detail ? data.detail : `HTTP ${response.status}`;
+        throw new Error(detail);
+      }
+      return data;
+    }
+
+    function statusPill(status) {
+      return `<span class="pill status-${status}">${status}</span>`;
+    }
+
+    function renderTable(rows, columns, emptyText) {
+      if (!rows.length) {
+        return `<div class="empty">${emptyText}</div>`;
+      }
+
+      const head = columns.map((column) => `<th>${column.label}</th>`).join("");
+      const body = rows.map((row) => {
+        const cells = columns.map((column) => `<td>${column.render(row)}</td>`).join("");
+        return `<tr>${cells}</tr>`;
+      }).join("");
+
+      return `
+        <table>
+          <thead><tr>${head}</tr></thead>
+          <tbody>${body}</tbody>
+        </table>
+      `;
+    }
+
+    function encodeHtml(value) {
+      if (value === null || value === undefined) return "";
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function actionMeta(action) {
+      const subject = action.payload && action.payload.email ? action.payload.email.subject : "";
+      const sender = action.payload && action.payload.email ? action.payload.email.sender : "";
+      return `
+        <div><strong>${encodeHtml(subject || "(no subject)")}</strong></div>
+        <div class="muted mono">${encodeHtml(sender || "")}</div>
+      `;
+    }
+
+    async function planActions() {
+      const result = await apiRequest("/actions/plan", {
+        method: "POST",
+        body: JSON.stringify({ limit: 50, statuses: ["classified"] })
+      });
+      showFlash(`Planned ${result.planned} action(s).`);
+    }
+
+    async function executePendingActions() {
+      const result = await apiRequest("/actions/execute", {
+        method: "POST",
+        body: JSON.stringify({ limit: 50, statuses: ["pending", "retry_pending"] })
+      });
+      showFlash(`Executed ${result.executed} action(s), ${result.failed} failed.`);
+    }
+
+    async function approveAction(actionId, executeNow) {
+      await apiRequest(`/actions/${actionId}/approve`, {
+        method: "POST",
+        body: JSON.stringify({ execute_now: executeNow })
+      });
+      showFlash(executeNow ? "Action approved and executed." : "Action approved.");
+      await refreshDashboard();
+    }
+
+    async function rejectAction(actionId) {
+      const reason = prompt("Rejection reason (optional):") || "";
+      await apiRequest(`/actions/${actionId}/reject`, {
+        method: "POST",
+        body: JSON.stringify({ reason })
+      });
+      showFlash("Action rejected.");
+      await refreshDashboard();
+    }
+
+    async function executeAction(actionId) {
+      await apiRequest(`/actions/${actionId}/execute`, { method: "POST" });
+      showFlash("Action executed.");
+      await refreshDashboard();
+    }
+
+    async function requeueDeadLetter(actionId, resetAttempts) {
+      await apiRequest(`/actions/${actionId}/requeue`, {
+        method: "POST",
+        body: JSON.stringify({ reset_attempts: resetAttempts })
+      });
+      showFlash(resetAttempts ? "Action requeued (attempts reset)." : "Action requeued.");
+      await refreshDashboard();
+    }
+
+    function boolLabel(value) {
+      return value ? "Yes" : "No";
+    }
+
+    function renderGoogleStatus(status) {
+      const connected = Boolean(status && status.connected);
+      googleStatusLabel.textContent = connected ? "connected" : "not connected";
+      googleConnected.textContent = connected ? "Connected" : "Disconnected";
+      googleOAuthReady.textContent = boolLabel(Boolean(status && status.oauth_ready));
+      googleEncryptionReady.textContent = boolLabel(Boolean(status && status.encryption_ready));
+      googleRefreshReady.textContent = boolLabel(Boolean(status && status.has_refresh_token));
+      googleExpires.textContent = status && status.expires_at ? status.expires_at : "-";
+
+      const canConnect = Boolean(status && status.oauth_ready && status.encryption_ready);
+      googleConnectButton.disabled = !canConnect;
+      googleConnectButton.textContent = connected ? "Reconnect" : "Connect";
+      googleDisconnectButton.disabled = !connected;
+    }
+
+    async function connectGoogle() {
+      const result = await apiRequest("/integrations/google/connect");
+      if (!result.auth_url) {
+        throw new Error("Google OAuth URL is missing.");
+      }
+      window.location.href = result.auth_url;
+    }
+
+    async function disconnectGoogle() {
+      const result = await apiRequest("/integrations/google/disconnect", { method: "POST" });
+      showFlash(`Google Calendar disconnected (${result.disconnected_count}).`);
+      await refreshDashboard();
+    }
+
+    async function saveRule(ruleId) {
+      const confidenceInput = document.querySelector(`[data-rule-confidence='${ruleId}']`);
+      const requiresInput = document.querySelector(`[data-rule-requires='${ruleId}']`);
+      const activeInput = document.querySelector(`[data-rule-active='${ruleId}']`);
+      if (!confidenceInput || !requiresInput || !activeInput) {
+        throw new Error("Rule editor inputs are missing.");
+      }
+
+      const minConfidence = Number(confidenceInput.value);
+      if (Number.isNaN(minConfidence) || minConfidence < 0 || minConfidence > 1) {
+        throw new Error("Threshold must be a value between 0.00 and 1.00.");
+      }
+
+      await apiRequest(`/rules/${ruleId}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          min_confidence: minConfidence,
+          requires_approval: requiresInput.checked,
+          is_active: activeInput.checked
+        })
+      });
+
+      showFlash(`Rule #${ruleId} updated.`);
+    }
+
+    function setRulesSnapshot(rules) {
+      const snapshot = new Map();
+      for (const rule of rules) {
+        snapshot.set(Number(rule.id), {
+          min_confidence: Number(rule.min_confidence),
+          requires_approval: Boolean(rule.requires_approval),
+          is_active: Boolean(rule.is_active)
+        });
+      }
+      rulesSnapshot = snapshot;
+    }
+
+    function collectRuleChanges() {
+      const updates = [];
+      for (const [ruleId, previous] of rulesSnapshot.entries()) {
+        const confidenceInput = document.querySelector(`[data-rule-confidence='${ruleId}']`);
+        const requiresInput = document.querySelector(`[data-rule-requires='${ruleId}']`);
+        const activeInput = document.querySelector(`[data-rule-active='${ruleId}']`);
+        if (!confidenceInput || !requiresInput || !activeInput) {
+          continue;
+        }
+
+        const minConfidence = Number(confidenceInput.value);
+        if (Number.isNaN(minConfidence) || minConfidence < 0 || minConfidence > 1) {
+          throw new Error(`Rule #${ruleId} has an invalid threshold.`);
+        }
+
+        const requiresApproval = requiresInput.checked;
+        const isActive = activeInput.checked;
+
+        const changedConfidence = Math.abs(minConfidence - previous.min_confidence) > 0.0001;
+        const changedApproval = requiresApproval !== previous.requires_approval;
+        const changedActive = isActive !== previous.is_active;
+        if (!changedConfidence && !changedApproval && !changedActive) {
+          continue;
+        }
+
+        updates.push({
+          id: ruleId,
+          min_confidence: minConfidence,
+          requires_approval: requiresApproval,
+          is_active: isActive
+        });
+      }
+      return updates;
+    }
+
+    async function saveAllRuleChanges() {
+      const updates = collectRuleChanges();
+      if (!updates.length) {
+        showFlash("No rule changes to save.");
+        return;
+      }
+      const result = await apiRequest("/rules/bulk", {
+        method: "PATCH",
+        body: JSON.stringify({ rules: updates })
+      });
+      showFlash(`Updated ${result.updated_count} rule(s).`);
+    }
+
+    function bindRuleActions() {
+      document.querySelectorAll("[data-action='save_rule']").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          try {
+            await saveRule(Number(btn.dataset.id));
+            await refreshDashboard();
+          } catch (error) {
+            showFlash(error.message, "err");
+          }
+        });
+      });
+    }
+
+    function bindApprovalActions() {
+      document.querySelectorAll("[data-action='approve']").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          try {
+            await approveAction(Number(btn.dataset.id), false);
+          } catch (error) {
+            showFlash(error.message, "err");
+          }
+        });
+      });
+
+      document.querySelectorAll("[data-action='approve_execute']").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          try {
+            await approveAction(Number(btn.dataset.id), true);
+          } catch (error) {
+            showFlash(error.message, "err");
+          }
+        });
+      });
+
+      document.querySelectorAll("[data-action='reject']").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          try {
+            await rejectAction(Number(btn.dataset.id));
+          } catch (error) {
+            showFlash(error.message, "err");
+          }
+        });
+      });
+
+      document.querySelectorAll("[data-action='execute']").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          try {
+            await executeAction(Number(btn.dataset.id));
+          } catch (error) {
+            showFlash(error.message, "err");
+          }
+        });
+      });
+    }
+
+    function bindDeadLetterActions() {
+      document.querySelectorAll("[data-action='requeue']").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          try {
+            await requeueDeadLetter(Number(btn.dataset.id), false);
+          } catch (error) {
+            showFlash(error.message, "err");
+          }
+        });
+      });
+
+      document.querySelectorAll("[data-action='requeue_reset']").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          try {
+            await requeueDeadLetter(Number(btn.dataset.id), true);
+          } catch (error) {
+            showFlash(error.message, "err");
+          }
+        });
+      });
+    }
+
+    function renderPendingApproval(actions) {
+      pendingApprovalLabel.textContent = `${actions.length} items`;
+      statPendingApproval.textContent = String(actions.length);
+
+      pendingApprovalBody.innerHTML = renderTable(
+        actions,
+        [
+          { label: "Action", render: (a) => `<span class="mono">#${a.id}</span> ${statusPill(a.status)}` },
+          { label: "Type", render: (a) => `<span class="mono">${encodeHtml(a.action_type)}</span>` },
+          { label: "Intent", render: (a) => `<span class="mono">${encodeHtml(a.intent)}</span>` },
+          { label: "Email", render: actionMeta },
+          {
+            label: "Review",
+            render: (a) => `
+              <div class="actions">
+                <button class="btn btn-success" data-action="approve" data-id="${a.id}">Approve</button>
+                <button class="btn btn-primary" data-action="approve_execute" data-id="${a.id}">Approve + Execute</button>
+                <button class="btn btn-danger" data-action="reject" data-id="${a.id}">Reject</button>
+              </div>
+            `
+          }
+        ],
+        "No actions require approval."
+      );
+    }
+
+    function renderRules(rules) {
+      rulesLabel.textContent = `${rules.length} items`;
+      setRulesSnapshot(rules);
+      rulesBody.innerHTML = renderTable(
+        rules,
+        [
+          { label: "Intent", render: (r) => `<span class="mono">${encodeHtml(r.intent)}</span>` },
+          { label: "Action Type", render: (r) => `<span class="mono">${encodeHtml(r.action_type)}</span>` },
+          {
+            label: "Threshold",
+            render: (r) => `
+              <input
+                class="input-num mono"
+                data-rule-confidence="${r.id}"
+                type="number"
+                min="0"
+                max="1"
+                step="0.01"
+                value="${Number(r.min_confidence).toFixed(2)}"
+              >
+            `
+          },
+          {
+            label: "Approval",
+            render: (r) => `
+              <input
+                class="toggle"
+                data-rule-requires="${r.id}"
+                type="checkbox"
+                ${r.requires_approval ? "checked" : ""}
+              >
+            `
+          },
+          {
+            label: "Active",
+            render: (r) => `
+              <input
+                class="toggle"
+                data-rule-active="${r.id}"
+                type="checkbox"
+                ${r.is_active ? "checked" : ""}
+              >
+            `
+          },
+          {
+            label: "Save",
+            render: (r) => `
+              <button class="btn btn-primary" data-action="save_rule" data-id="${r.id}">Save</button>
+            `
+          }
+        ],
+        "No routing rules available."
+      );
+    }
+
+    function renderPending(actions) {
+      pendingLabel.textContent = `${actions.length} items`;
+      statPending.textContent = String(actions.length);
+
+      pendingBody.innerHTML = renderTable(
+        actions,
+        [
+          { label: "Action", render: (a) => `<span class="mono">#${a.id}</span> ${statusPill(a.status)}` },
+          { label: "Type", render: (a) => `<span class="mono">${encodeHtml(a.action_type)}</span>` },
+          { label: "Intent", render: (a) => `<span class="mono">${encodeHtml(a.intent)}</span>` },
+          {
+            label: "Retry",
+            render: (a) => `<span class="mono">${encodeHtml(a.next_attempt_at || "-")}</span>`
+          },
+          { label: "Email", render: actionMeta },
+          {
+            label: "Execute",
+            render: (a) => `
+              <div class="actions">
+                <button class="btn btn-primary" data-action="execute" data-id="${a.id}">Execute</button>
+              </div>
+            `
+          }
+        ],
+        "No actions are queued for execution."
+      );
+    }
+
+    function renderDeadLetter(actions) {
+      deadLetterLabel.textContent = `${actions.length} items`;
+
+      deadLetterBody.innerHTML = renderTable(
+        actions,
+        [
+          { label: "Action", render: (a) => `<span class="mono">#${a.id}</span> ${statusPill(a.status)}` },
+          { label: "Type", render: (a) => `<span class="mono">${encodeHtml(a.action_type)}</span>` },
+          { label: "Intent", render: (a) => `<span class="mono">${encodeHtml(a.intent)}</span>` },
+          { label: "Attempts", render: (a) => `<span class="mono">${encodeHtml(a.attempts)}</span>` },
+          { label: "Dead-Lettered At", render: (a) => `<span class="mono">${encodeHtml(a.dead_lettered_at || "-")}</span>` },
+          { label: "Error", render: (a) => `<span class="mono">${encodeHtml((a.error_message || "-").slice(0, 140))}</span>` },
+          {
+            label: "Retry",
+            render: (a) => `
+              <div class="actions">
+                <button class="btn btn-primary" data-action="requeue" data-id="${a.id}">Requeue</button>
+                <button class="btn btn-warn" data-action="requeue_reset" data-id="${a.id}">Requeue + Reset</button>
+              </div>
+            `
+          }
+        ],
+        "No dead-letter actions."
+      );
+    }
+
+    function renderRecent(actions) {
+      const recent = actions.filter((item) => !["pending_approval", "pending", "retry_pending"].includes(item.status));
+      recentLabel.textContent = `${recent.length} items`;
+
+      const executedCount = recent.filter((item) => item.status === "executed").length;
+      const failedCount = recent.filter((item) => item.status === "failed" || item.status === "dead_letter").length;
+      statExecuted.textContent = String(executedCount);
+      statFailed.textContent = String(failedCount);
+
+      recentBody.innerHTML = renderTable(
+        recent,
+        [
+          { label: "Action", render: (a) => `<span class="mono">#${a.id}</span> ${statusPill(a.status)}` },
+          { label: "Type", render: (a) => `<span class="mono">${encodeHtml(a.action_type)}</span>` },
+          { label: "Intent", render: (a) => `<span class="mono">${encodeHtml(a.intent)}</span>` },
+          { label: "Email", render: actionMeta },
+          {
+            label: "Result",
+            render: (a) => {
+              const output = a.payload && a.payload.execution_output ? a.payload.execution_output : {};
+              const text = a.error_message || JSON.stringify(output);
+              return `<span class="mono">${encodeHtml((text || "").slice(0, 140))}</span>`;
+            }
+          }
+        ],
+        "No completed or terminal actions yet."
+      );
+    }
+
+    function renderTasks(tasks) {
+      tasksLabel.textContent = `${tasks.length} items`;
+      tasksBody.innerHTML = renderTable(
+        tasks,
+        [
+          { label: "Task", render: (t) => `<span class="mono">#${t.id}</span>` },
+          { label: "Title", render: (t) => `<strong>${encodeHtml(t.title || "(untitled)")}</strong>` },
+          { label: "Due", render: (t) => `<span class="mono">${encodeHtml(t.due_text || "-")}</span>` },
+          { label: "Status", render: (t) => `<span class="mono">${encodeHtml(t.status || "-")}</span>` },
+          { label: "Email", render: (t) => `<span class="mono">#${encodeHtml(t.email_id)}</span>` },
+          { label: "Created", render: (t) => `<span class="mono">${encodeHtml(t.created_at || "-")}</span>` }
+        ],
+        "No tasks yet."
+      );
+    }
+
+    function renderEvents(events) {
+      eventsLabel.textContent = `${events.length} events`;
+      eventsBody.innerHTML = renderTable(
+        events,
+        [
+          { label: "Time", render: (e) => `<span class="mono">${encodeHtml(e.created_at)}</span>` },
+          { label: "Action", render: (e) => `<span class="mono">#${e.action_id}</span>` },
+          { label: "Type", render: (e) => `<span class="mono">${encodeHtml(e.event_type)}</span>` },
+          { label: "Status", render: (e) => e.status ? statusPill(e.status) : "<span class='mono'>-</span>" },
+          { label: "Message", render: (e) => `<span class="mono">${encodeHtml((e.message || "").slice(0, 180))}</span>` }
+        ],
+        "No audit events yet."
+      );
+    }
+
+    async function refreshDashboard() {
+      const [googleStatusData, rulesData, actionsData, deadLetterData, tasksData, eventsData] = await Promise.all([
+        apiRequest("/integrations/google/status"),
+        apiRequest("/rules"),
+        apiRequest("/actions?limit=200"),
+        apiRequest("/actions/dead-letter?limit=200"),
+        apiRequest("/tasks?limit=200"),
+        apiRequest("/actions/events?limit=120")
+      ]);
+
+      const allActions = actionsData.items || [];
+      const pendingApprovalActions = allActions.filter((item) => item.status === "pending_approval");
+      const pendingActions = allActions.filter((item) => item.status === "pending" || item.status === "retry_pending");
+
+      renderGoogleStatus(googleStatusData);
+      renderRules(rulesData.items || []);
+      renderPendingApproval(pendingApprovalActions);
+      renderPending(pendingActions);
+      renderDeadLetter(deadLetterData.items || []);
+      renderRecent(allActions);
+      renderTasks(tasksData.items || []);
+      renderEvents(eventsData.items || []);
+      bindRuleActions();
+      bindApprovalActions();
+      bindDeadLetterActions();
+    }
+
+    async function setup() {
+      document.getElementById("btn-plan").addEventListener("click", async () => {
+        try {
+          await planActions();
+          await refreshDashboard();
+        } catch (error) {
+          showFlash(error.message, "err");
+        }
+      });
+
+      document.getElementById("btn-exec").addEventListener("click", async () => {
+        try {
+          await executePendingActions();
+          await refreshDashboard();
+        } catch (error) {
+          showFlash(error.message, "err");
+        }
+      });
+
+      document.getElementById("btn-refresh").addEventListener("click", async () => {
+        try {
+          await refreshDashboard();
+          showFlash("Dashboard refreshed.");
+        } catch (error) {
+          showFlash(error.message, "err");
+        }
+      });
+
+      document.getElementById("btn-metrics").addEventListener("click", () => {
+        window.location.href = "/metrics";
+      });
+
+      saveAllRulesButton.addEventListener("click", async () => {
+        try {
+          await saveAllRuleChanges();
+          await refreshDashboard();
+        } catch (error) {
+          showFlash(error.message, "err");
+        }
+      });
+
+      googleConnectButton.addEventListener("click", async () => {
+        try {
+          await connectGoogle();
+        } catch (error) {
+          showFlash(error.message, "err");
+        }
+      });
+
+      googleDisconnectButton.addEventListener("click", async () => {
+        try {
+          await disconnectGoogle();
+        } catch (error) {
+          showFlash(error.message, "err");
+        }
+      });
+
+      const query = new URLSearchParams(window.location.search);
+      const oauthState = query.get("google_oauth");
+      const callbackMessage = query.get("message");
+      if (oauthState === "connected") {
+        showFlash(callbackMessage || "Google Calendar connected successfully.");
+      } else if (oauthState === "error") {
+        showFlash(callbackMessage || "Google OAuth callback failed.", "err");
+      }
+      if (oauthState) {
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+
+      try {
+        await refreshDashboard();
+      } catch (error) {
+        showFlash(error.message, "err");
+      }
+
+      setInterval(() => {
+        refreshDashboard().catch(() => {});
+      }, 20000);
+    }
+
+    setup();
+  </script>
+</body>
+</html>
+
